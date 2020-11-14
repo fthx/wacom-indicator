@@ -13,10 +13,11 @@ const Lang = imports.lang;
 
 
 // device model label
-const SHOW_MODEL = true; // default = true
+const SHOW_MODEL = false; // default = false
 const MAX_LABEL_LENGTH = 20; // default = 20
 
 // interval for tablet state refresh (s)
+const AUTO_REFRESH = false; // default = true
 const REFRESH_TIMEOUT = 60; // default = 60
 
 // update on hover
@@ -38,7 +39,7 @@ class WacomIndicator extends PanelMenu.Button {
         this.hbox = new St.BoxLayout({style_class: 'panel-button', visible: true, reactive: true, can_focus: true, track_hover: true}); 
 		this.icon = new St.Icon({ icon_name: 'input-tablet-symbolic', style_class: 'system-status-icon' });
         this.hbox.add_child(this.icon);
-        this.text = new St.Label({y_align: Clutter.ActorAlign.CENTER});
+        this.text = new St.Label({style: "font-size: 90%", y_align: Clutter.ActorAlign.CENTER});
         this.text.set_text("N/A");
         this.hbox.add_child(this.text);
         this._updateLabel();
@@ -49,21 +50,23 @@ class WacomIndicator extends PanelMenu.Button {
         this._updateLabel();
         
         // refresh tablet state every REFRESH_TIMEOUT seconds
-        GLib.timeout_add_seconds(GLib.PRIORITY_LOW, REFRESH_TIMEOUT, Lang.bind(this, this._updateLabel));
+        if (AUTO_REFRESH) {
+        	this.refreshTimeout = GLib.timeout_add_seconds(GLib.PRIORITY_LOW, REFRESH_TIMEOUT, Lang.bind(this, this._updateLabel))
+        }
         
         // connect signals
-        this.connect('button-press-event', Lang.bind(this, this._openSettings));
+        this.click = this.connect('button-press-event', Lang.bind(this, this._openSettings));
         if (UPDATE_ON_HOVER) {
-        	this.connect('notify::hover', Lang.bind(this, this._updateLabel))
+        	this.hover = this.connect('notify::hover', Lang.bind(this, this._updateLabel))
         }
 	}
         
     // open GNOME Settings Wacom
     _openSettings() {
 		try {
-			Util.trySpawnCommandLine("gnome-control-center wacom");
+			Util.trySpawnCommandLine("gnome-control-center wacom")
 		} catch(err) {
-			Main.notify("Error: unable to open GNOME Settings Wacom");
+			Main.notify("Error: unable to open GNOME Settings Wacom")
 		};
 	}
 	
@@ -76,18 +79,18 @@ class WacomIndicator extends PanelMenu.Button {
 			this.devices = this.upowerClient.get_devices();
 			this.wacom = "?";
 			if (!SHOW_IF_DISCONNECTED) {
-				this.hide();
+				this.hide()
 			}
 			for (var i=0; i < this.devices.length; i++){
 				this.device = this.devices[i]
 				if (this.device.kind == UPower.DeviceKind.TABLET) {
 					this.wacom = "";
 					if (SHOW_MODEL) {
-						this.wacom += this.device.model.substring(0, MAX_LABEL_LENGTH) + " :: ";
+						this.wacom += this.device.model.substring(0, MAX_LABEL_LENGTH) + " :: "
 					}
 					this.wacom += this.device.percentage + " %";
 					if (!SHOW_IF_DISCONNECTED) {
-						this.show();
+						this.show()
 					}
 				}
 			};
@@ -96,6 +99,17 @@ class WacomIndicator extends PanelMenu.Button {
 		}
 		return true
 	}
+	
+	destroy() {
+		if (this.refreshTimeout) {
+        	GLib.source_remove(this.refreshTimeout)
+        };
+        if (this.hover) {
+        	this.disconnect(this.hover)
+        };
+        this.disconnect(this.click);
+        super.destroy()
+    }
 })
 
 function init() {
@@ -106,7 +120,7 @@ var latestCallTime;
 
 function enable() {
     _indicator = new WacomIndicator();
-    Main.panel.addToStatusArea('wacom-indicator', _indicator);
+    Main.panel.addToStatusArea('wacom-indicator', _indicator, 5);
 }
 
 function disable() {
