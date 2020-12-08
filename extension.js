@@ -39,7 +39,7 @@ class WacomIndicator extends PanelMenu.Button {
         this.hbox = new St.BoxLayout({style_class: 'panel-button', visible: true, reactive: true, can_focus: true, track_hover: true}); 
 		this.icon = new St.Icon({ icon_name: 'input-tablet-symbolic', style_class: 'system-status-icon' });
         this.hbox.add_child(this.icon);
-        this.text = new St.Label({style: "font-size: 90%", y_align: Clutter.ActorAlign.CENTER});
+        this.text = new St.Label({style: "font-size: 85%", y_align: Clutter.ActorAlign.CENTER});
         this.text.set_text("N/A");
         this.hbox.add_child(this.text);
         this._updateLabel();
@@ -120,7 +120,7 @@ var latestCallTime;
 
 function enable() {
     _indicator = new WacomIndicator();
-    Main.panel.addToStatusArea('wacom-indicator', _indicator, 5);
+    Main.panel.addToStatusArea('wacom-indicator', _indicator);
 }
 
 function disable() {
