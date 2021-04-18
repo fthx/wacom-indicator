@@ -1,11 +1,11 @@
 /*	Wacom Indicator
 	Wacom tablet utility
 	GNOME Shell extension
-	(c) Francois Thirioux 2020
+	(c) Francois Thirioux 2021
 	License: GPLv3 */
 	
 
-const { Clutter, GLib, GObject, Shell, St, UPowerGlib: UPower} = imports.gi;
+const { Clutter, GLib, GObject, Shell, St, UPowerGlib: UPower } = imports.gi;
 
 const Main = imports.ui.main;
 const Util = imports.misc.util;
@@ -36,8 +36,8 @@ class WacomIndicator extends PanelMenu.Button {
 		this.upower_client = UPower.Client.new_full(null);
 		
 		// create icon+text
-        this.box = new St.BoxLayout({style_class: 'panel-button', visible: true, reactive: true, can_focus: true, track_hover: true}); 
-		this.box.icon = new St.Icon({ icon_name: 'input-tablet-symbolic', style_class: 'system-status-icon' });
+        this.box = new St.BoxLayout({visible: true, reactive: true, can_focus: true, track_hover: true}); 
+		this.box.icon = new St.Icon({icon_name: 'input-tablet-symbolic', style_class: 'system-status-icon'});
         this.box.add_child(this.box.icon);
         this.box.text = new St.Label({style: "font-size: smaller", y_align: Clutter.ActorAlign.CENTER});
         this.box.text.set_text("N/A");
@@ -96,20 +96,20 @@ class WacomIndicator extends PanelMenu.Button {
 				}
 			}
 			this.box.text.set_text(this.wacom);
-			latest_call_time = this.current_call_time
+			latest_call_time = this.current_call_time;
 		}
-		return latest_call_time
+		return latest_call_time;
 	}
 	
 	_destroy() {
 		if (this.refresh_timeout) {
-        	GLib.source_remove(this.refresh_timeout)
+        	GLib.source_remove(this.refresh_timeout);
         }
         if (this.hover) {
-        	this.disconnect(this.box.hover)
+        	this.disconnect(this.box.hover);
         }
         this.disconnect(this.box.click);
-        super.destroy()
+        super.destroy();
     }
 })
 
